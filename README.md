@@ -4,7 +4,7 @@
 
 ### Discover a book. Start a new story.
 
-An online bookstore and reading room built to bring book discovery, shopping, and reading together in one place.
+An online bookstore and reading room that brings book discovery, shopping, and an accessible in-app reading experience together.
 
 <img src="./assets/bookstore-hero.svg" alt="BookStore 3D-style banner — Golu Kumar, Full Stack Developer" width="100%" />
 
@@ -18,7 +18,7 @@ An online bookstore and reading room built to bring book discovery, shopping, an
 
 ## About the project
 
-BookStore ek full-stack web application hai jahan readers books explore aur purchase kar sakte hain, wishlist/cart manage kar sakte hain, aur supported public-domain editions ko online padh sakte hain. Is project ka focus sirf ek book listing page banana nahi tha—goal tha discovery se lekar order tracking aur reading progress tak ek connected experience banana.
+BookStore ek full-stack web application hai jahan readers books explore aur purchase kar sakte hain, wishlist/cart manage kar sakte hain, aur supported public-domain editions ko online padh sakte hain. Reading Room mein text-to-speech, adjustable text size, bookmarks, highlights, aur saved reading progress bhi milta hai. Is project ka goal discovery se lekar order tracking aur reading progress tak ek connected experience banana hai.
 
 > **Project type:** Full-stack e-commerce web app  
 > **Status:** Local development and provider-configurable integrations
@@ -48,12 +48,14 @@ BookStore ek React storefront ko Express API aur SQLite database ke saath combin
 - **Checkout and payments:** delivery address flow and optional Razorpay Checkout; payment verification and webhooks are handled by the backend.
 - **Order lifecycle:** customer order details, payment and delivery status, address, tracking, and admin-managed fulfillment.
 - **Order email updates:** SMTP notifications for confirmed, packed, shipped, out-for-delivery, and delivered events, with admin retry when delivery fails.
-- **Reading Room:** `/read` library with search/category filters, source credits, and supported Project Gutenberg/Wikisource editions.
-- **In-app reader:** bundled texts support saved progress, bookmarks, and highlights; signed-in users can sync supported reading state.
+- **Reading Room:** `/read` library with title, author, category, and language search/filters; source credits and supported Project Gutenberg/Wikisource editions.
+- **In-app reader:** resume reading from the saved section and paragraph, adjust text size, navigate sections, bookmark sections, and highlight selected passages in four colors.
+- **Read aloud:** use speech voices available on the device, with play/pause/resume, voice selection, adjustable speed, and sentence-level reading highlight. Voice availability depends on browser and device support.
+- **Reading progress sync:** progress and notes are saved on the device; signed-in readers can sync supported reading state to their account and continue across sessions.
 - **Admin dashboard:** protected login, inventory and stock tools, sales reports, order management, reviews, returns, and optional ISBN lookup; open it from **More → Features → Open admin dashboard**.
 - **Animated 3D storefront hero:** lazy-loaded Three.js book scene with floating books, pointer-responsive movement, reduced-motion support, and a WebGL fallback.
-- **Cinematic welcome page:** root URL opens a responsive 3D welcome screen with an animated developer character, a six-second automatic entrance, an Enter button, and a non-WebGL fallback; the existing storefront stays at `/`.
-- **Accessibility and responsive UI:** keyboard-friendly controls, accessibility preferences, and layouts designed for different screen sizes.
+- **Cinematic welcome page:** the first screen is a responsive 3D welcome intro with an animated scene, sound controls, a 10-second automatic entrance, an **Enter BookStore** action, and a non-WebGL fallback.
+- **Accessibility and responsive UI:** English/Hindi interface selection, high-contrast mode, keyboard-friendly controls, adjustable reader text size, and layouts designed for different screen sizes.
 - **Automated checks:** Vitest unit tests and Playwright end-to-end tests.
 
 ## Tech stack
@@ -66,6 +68,7 @@ BookStore ek React storefront ko Express API aur SQLite database ke saath combin
 | Database | SQLite with `better-sqlite3` |
 | Authentication | bcrypt password hashing, signed HTTP-only cookies, JWT |
 | Security middleware | Helmet, rate limiting |
+| Read-aloud | Browser speech synthesis with voices available on the user's device |
 | Payments | Optional Razorpay Checkout integration |
 | Shipping | Optional Shiprocket integration |
 | Testing | Vitest, Testing Library, Playwright |
@@ -112,6 +115,19 @@ Login OTPs expire after 5 minutes, are single-use, allow at most 5 incorrect att
 ### Order details and email updates
 
 Signed-in customers can open **Orders** to see each order's items, totals, payment status, delivery address, fulfillment steps, and carrier tracking. The protected admin dashboard is available from **More → Features → Open admin dashboard**; an administrator can advance paid orders one step at a time and create Shiprocket shipments when configured. Order-confirmation email is sent after payment is verified. Fulfillment emails are sent when the admin updates an order; out-for-delivery and delivered carrier updates are emailed when Shiprocket tracking is refreshed. If an email send fails, the admin dashboard shows the failure and a retry action.
+
+### Reading Room and reader
+
+Open **Read Online** or visit `/read` to browse supported reading editions. Search by title or author and narrow results by category or language. Each edition displays its source and translation details.
+
+Inside a supported book, readers can:
+
+- Resume from saved section and paragraph progress, move between sections, and adjust text size.
+- Add section bookmarks and highlight selected passages; revisit or remove saved notes later.
+- Listen with **Read aloud**, pause or resume playback, choose an available device voice, and adjust playback speed. The available voices depend on the browser and operating system.
+- Save progress and notes on the current device. When signed in, the reader can also sync supported reading state to the account; if account sync is unavailable, the device copy remains available.
+
+Reader availability and public-domain status can vary by title, source, and country. Check the source and edition information shown in the app.
 
 ## Environment configuration
 
@@ -169,8 +185,8 @@ For browser tests, install Chromium once with `npx playwright install chromium`.
 
 | Route | Page |
 | --- | --- |
-| `/` | 3D welcome page first; automatically enters the existing storefront after 6 seconds or immediately with **Enter Website** |
-| `/welcome` | Welcome page |
+| `/` | App entry point; shows the welcome intro before opening the storefront |
+| `/welcome` | 3D welcome intro; enter manually or wait for the 10-second automatic transition |
 | `/admin` | Protected admin dashboard |
 | `/read` | Reading Room library |
 | `/read/:bookId` | Supported in-app reading edition |
@@ -188,8 +204,9 @@ Booking/
 │   └── data/                 # Local SQLite database (generated)
 ├── shared/books.js           # Seed book catalog
 ├── src/
-│   ├── components/           # Storefront, reader, checkout, and admin UI
+│   ├── components/           # Storefront, reader, checkout, admin, and welcome UI
 │   ├── readerCatalog.js      # Reading editions and source attribution
+│   ├── readerState.js        # Reading progress, bookmarks, and highlights
 │   └── App.jsx               # Main storefront experience
 ├── .env.example              # Safe environment-variable template
 └── package.json              # Scripts and dependencies
