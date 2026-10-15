@@ -20,7 +20,7 @@ const root = path.resolve(here, '..')
 const dataDir = path.join(here, 'data')
 fs.mkdirSync(dataDir, { recursive: true })
 
-const isProduction = process.env.NODE_ENV === 'production'
+const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.PORT)
 const jwtSecret = process.env.JWT_SECRET
 if (isProduction && (!jwtSecret || jwtSecret.length < 32)) {
   throw new Error('Set JWT_SECRET to a random secret of at least 32 characters in production.')
@@ -1848,7 +1848,8 @@ app.use((error, _req, res, _next) => {
   return res.status(500).json({ error: 'An unexpected server error occurred.' })
 })
 
-const port = Number(process.env.API_PORT || 3001)
-app.listen(port, isProduction ? '0.0.0.0' : '127.0.0.1', () => {
-  console.log(`BookStore API listening on http://127.0.0.1:${port}`)
+const port = Number(process.env.API_PORT || process.env.PORT || 3001)
+const host = isProduction ? '0.0.0.0' : '127.0.0.1'
+app.listen(port, host, () => {
+  console.log(`BookStore API listening on http://${host}:${port}`)
 })
